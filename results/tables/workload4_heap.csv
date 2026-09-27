@@ -1,0 +1,9 @@
+structure,n,phase,avg_time_ns,comparisons,order_ok
+MinHeap,100,insert,275165.0,206,true
+MinHeap,100,extractMin,593884.6,863,true
+MinHeap,1000,insert,247792.4,2326,true
+MinHeap,1000,extractMin,562064.0,14996,true
+MinHeap,10000,insert,946906.0,22753,true
+MinHeap,10000,extractMin,6574900.6,216531,true
+MinHeap,100000,insert,3716746.0,227857,true
+MinHeap,100000,extractMin,5.3033618E7,2831426,true
