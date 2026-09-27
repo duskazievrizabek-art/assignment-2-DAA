@@ -1,12 +1,12 @@
-# Assignment 2 — Algorithmic Analysis, Correctness and Performance Trade-offs
+# Assignment 2 — Algorithmic Analysis, Correctness, and Performance Trade-offs
 
-**Автор:** индивидуальная работа
-**Язык реализации:** Java 21
-**Дата:** сентябрь 2026
+**Author:** BEGEN RIZABEK
+**Implementation Language:** Java 23
+**Date:** September 2026
 
-Репозиторий содержит собственные (написанные с нуля) реализации трёх структур
-данных — Dynamic Array, Linked List и Min-Heap, — их корректностные доказательства,
-теоретический анализ сложности и результаты экспериментального бенчмаркинга.
+This repository contains custom (written from scratch) implementations of three data
+structures—Dynamic Array, Linked List, and Min-Heap—along with correctness proofs,
+theoretical complexity analysis, and experimental benchmarking results.
 
 ```
 assignment-2/
@@ -19,8 +19,8 @@ assignment-2/
 ├── scripts/
 │   └── make_plots.py
 ├── results/
-│   ├── tables/   (*.csv — сырые результаты замеров)
-│   └── plots/    (*.png — графики)
+│   ├── tables/   (*.csv — raw measurement data)
+│   └── plots/    (*.png — graphs)
 └── README.md
 ```
 
@@ -28,43 +28,41 @@ assignment-2/
 
 ## 1. Overview
 
-Цель задания — не просто реализовать три классические структуры данных
-(Dynamic Array, Linked List, Min-Heap), а провести полноценный анализ их
-алгоритмов: доказать корректность через инварианты цикла, определить
-теоретическую асимптотику по всем операциям (O, Ω, Θ), спроектировать
-контролируемые эксперименты и сравнить теорию с реально измеренной
-производительностью на JVM.
+The goal of this assignment is not merely to implement three classic data structures
+(Dynamic Array, Linked List, Min-Heap), but to conduct a comprehensive analysis of their
+algorithms: proving correctness using loop invariants, determining theoretical
+asymptotic complexity for all operations (O, Ω, Θ), designing controlled experiments,
+and comparing theory against actual performance measured on the JVM.
 
-Реализованы:
+Implemented:
 
-- **DynamicArray\<T\>** — на основе `Object[]`, с удвоением капасити при
-  переполнении (`add`, `add(index,x)`, `remove(index)`, `get(index)`, `contains(x)`).
-- **LinkedList\<T\>** — односвязный список с хвостовым указателем (свой класс,
-  не `java.util.LinkedList`), та же сигнатура операций.
-- **MinHeap\<T extends Comparable\<T\>\>** — бинарная min-куча на массиве
-  (`insert`, `peekMin`, `extractMin`).
+- **DynamicArray\<T\>** — based on `Object[]`, with capacity doubling upon
+overflow (`add`, `add(index,x)`, `remove(index)`, `get(index)`, `contains(x)`).
+- **LinkedList\<T\>** — a singly linked list with a tail pointer (custom class,
+not `java.util.LinkedList`), featuring the same operation signatures. - **MinHeap\<T extends Comparable\<T\>\>** — an array-based binary min-heap
+(`insert`, `peekMin`, `extractMin`).
 
-Каждый класс содержит встроенные счётчики (`accessCount`, `comparisonCount`,
-`movementCount`), которые позволяют измерять не только время выполнения
-(`System.nanoTime()`), но и точное число элементарных операций — это нужно,
-чтобы отделить эффект константных факторов JVM от собственно алгоритмической
-сложности.
+Each class contains built-in counters (`accessCount`, `comparisonCount`,
+`movementCount`) that allow measuring not only execution time
+(`System.nanoTime()`) but also the exact number of elementary operations—this is
+necessary to isolate the effect of JVM constant factors from the actual
+algorithmic complexity.
 
 ---
 
 ## 2. Complexity Analysis
 
-### 2.1 Сводная таблица
+### 2.1 Summary Table
 
-| Структура     | Операция         | Best        | Average     | Worst       | Aux. space |
+| Structure     | Operation        | Best        | Average     | Worst       | Aux. space |
 |---------------|------------------|-------------|-------------|-------------|------------|
-| DynamicArray  | `add(x)`         | Θ(1)*       | Θ(1)* (amortized) | O(n) (resize) | O(1) amortized / O(n) при resize |
+| DynamicArray  | `add(x)`         | Θ(1)*       | Θ(1)* (amortized) | O(n) (resize) | O(1) amortized / O(n) on resize |
 | DynamicArray  | `add(index,x)`   | Ω(1) (index=size) | Θ(n)  | O(n) (index=0) | O(1) |
 | DynamicArray  | `remove(index)`  | Ω(1) (index=size-1) | Θ(n) | O(n) (index=0) | O(1) |
 | DynamicArray  | `get(index)`     | Θ(1)        | Θ(1)        | Θ(1)        | O(1) |
-| DynamicArray  | `contains(x)`    | Ω(1) (найден первым) | Θ(n) | O(n) (не найден) | O(1) |
+| DynamicArray  | `contains(x)`    | Ω(1) (found first) | Θ(n) | O(n) (not found) | O(1) |
 | LinkedList    | `add(x)` (append)| Θ(1)        | Θ(1)        | Θ(1)        | O(1) |
-| LinkedList    | `add(index,x)`   | Ω(1) (index=0 или size) | Θ(n) | O(n) (index≈size/2) | O(1) |
+| LinkedList    | `add(index,x)`   | Ω(1) (index=0 or size) | Θ(n) | O(n) (index≈size/2) | O(1) |
 | LinkedList    | `remove(index)`  | Ω(1) (index=0) | Θ(n)     | O(n)        | O(1) |
 | LinkedList    | `get(index)`     | Ω(1) (index=0) | Θ(n)     | O(n) (index=size-1) | O(1) |
 | LinkedList    | `contains(x)`    | Ω(1)        | Θ(n)        | O(n)        | O(1) |
@@ -72,285 +70,250 @@ assignment-2/
 | MinHeap       | `peekMin()`      | Θ(1)        | Θ(1)        | Θ(1)        | O(1) |
 | MinHeap       | `extractMin()`   | Ω(1) (n≤1)  | Θ(log n)    | O(log n)    | O(1) |
 
-\* `add(x)` у Dynamic Array — Θ(1) **амортизированно**: отдельная вставка при
-resize стоит O(n), но так как resize (удвоение) происходит экспоненциально
-редко, суммарная стоимость n добавлений равна O(n), т.е. O(1) на операцию
-в среднем (метод бухгалтерского учёта / amortized analysis).
+\* `add(x)` for Dynamic Array is Θ(1) **amortized**: a single insertion during
+a resize costs O(n), but since resizing (doubling) happens exponentially
+infrequently, the total cost of n additions is O(n), i.e., O(1) per operation
+on average (accounting method / amortized analysis).
 
-### 2.2 Обоснование
+### 2.2 Justification
 
-**DynamicArray.add(x)** — если есть свободное место, это присваивание
-`data[size]=x; size++` — Θ(1). Если массив заполнен, нужно выделить новый
-массив вдвое большего размера и скопировать n элементов — O(n). Поскольку
-удвоение случается только когда размер становится степенью двойки от
-исходной ёмкости, суммарная стоимость n последовательных `add` равна
-n + (1+2+4+...+n) ≈ 3n, то есть амортизированная стоимость одной операции —
+**DynamicArray.add(x)** — if there is free space, it is an assignment
+`data[size]=x; size++` — Θ(1). If the array is full, a new array of
+double the size must be allocated and n elements copied — O(n). Since
+doubling occurs only when the size reaches a power of two relative to the
+initial capacity, the total cost of n consecutive `add` operations is
+n + (1+2+4+...+n) ≈ 3n; thus, the amortized cost per operation is
 Θ(1).
 
-**DynamicArray.add(index,x) / remove(index)** — корректность требует сдвига
-всех элементов после `index` на одну позицию, чтобы сохранить порядок и
-плотную упаковку массива. Число сдвигаемых элементов — `size - index`.
-При `index=size` (append) сдвигать нечего → Ω(1). При `index=0` сдвигаются
-все `size` элементов → O(n). В среднем по случайному индексу — Θ(n) (мат.
-ожидание n/2 сдвигов).
+**DynamicArray.add(index, x) / remove(index)** — correctness requires shifting
+all elements following `index` by one position to maintain the array's
+order and compact packing. The number of elements to shift is `size - index`.
+When `index=size` (append), there is nothing to shift → Ω(1). When `index=0`,
+all `size` elements are shifted → O(n). On average, for a random index,
+it is Θ(n) (expected value of n/2 shifts).
 
-**DynamicArray.get(index)** — прямой доступ по индексу к непрерывному блоку
-памяти, `data[index]` — единственная операция независимо от `index` и `size`
-→ Θ(1) во всех случаях. Это ключевое структурное преимущество массива.
+**DynamicArray.get(index)** — direct index-based access to a contiguous block
+of memory; `data[index]` is the sole operation, regardless of `index` or `size`
+→ Θ(1) in all cases. This is a key structural advantage of the array.
 
-**DynamicArray.contains(x)** — линейный проход, в худшем случае (элемент
-отсутствует или находится в конце) — n сравнений, O(n); в лучшем — элемент
-первый, Ω(1); в среднем при равномерном распределении позиции — Θ(n).
+**DynamicArray.contains(x)** — a linear scan; in the worst case (element
+missing or at the end), it takes n comparisons, O(n); in the best case
+(element is first), Ω(1); on average, assuming a uniform distribution of
+positions, it is Θ(n).
 
-**LinkedList.add(x)** (append) — благодаря хранению указателя `tail`,
-присоединение нового узла — это релинковка двух ссылок, Θ(1), **без**
-обхода списка. Без tail-указателя эта операция была бы O(n).
+**LinkedList.add(x)** (append) — thanks to storing a `tail` pointer,
+adding a new node involves relinking two references, Θ(1), **without**
+traversal of the list. Without a tail pointer, this operation would be O(n).
 
-**LinkedList.add(index,x) / remove(index) / get(index)** — у связного списка
-нет произвольного доступа: чтобы добраться до узла с номером `index`, нужно
-пройти `index` ссылок от `head`. Специальные случаи `index=0` (и `index=size`
-для `add`, благодаря `tail`) выполняются за Ω(1); в общем случае — Θ(n)
-переходов по указателям; наихудший случай (например, середина списка) — O(n).
-Это принципиальное отличие от `DynamicArray.get`, у которого `get` — всегда
-Θ(1): **у списка операции "похожие по названию" (`get`) имеют совершенно
-разную асимптотику из-за физической (не)смежности памяти**.
+**LinkedList.add(index, x) / remove(index) / get(index)** — a linked list does not
+support random access: to reach the node at `index`, one must traverse `index`
+links starting from the `head`. Special cases where `index=0` (and `index=size`
+for `add`, thanks to the `tail`) execute in Ω(1); the general case involves
+Θ(n) pointer traversals; the worst case (e.g., the middle of the list) is O(n).
+This is a fundamental difference from `DynamicArray.get`, where `get` is always
+Θ(1): **for the list, operations with "similar names" (`get`) have completely
+different asymptotic complexities due to the physical (non-)contiguity of memory**.
 
-**LinkedList.contains(x)** — аналогично массиву, линейный проход по ссылкам,
-Θ(n) в среднем/худшем случае, Ω(1) в лучшем.
+**LinkedList.contains(x)** — similar to an array: a linear traversal of links,
+Θ(n) in the average/worst case, Ω(1) in the best case.
 
-**MinHeap.insert(x)** — новый элемент добавляется в конец массива (последний
-уровень кучи), затем "всплывает" (`siftUp`) вдоль пути к корню. Высота
-бинарной кучи из n элементов — ⌊log₂ n⌋, поэтому в худшем случае всплытие
-идёт от листа до корня — O(log n). Если новый элемент не меньше своего
-родителя, `siftUp` завершается за одну итерацию — Ω(1).
+**MinHeap.insert(x)** — the new element is added to the end of the array (the
+last level of the heap) and then "bubbles up" (`siftUp`) along the path to the root.
+The height of a binary heap with n elements is ⌊log₂ n⌋; thus, in the worst case,
+the element bubbles up from a leaf to the root—O(log n). If the new element is
+not smaller than its parent, `siftUp` completes in a single iteration—Ω(1).
 
-**MinHeap.peekMin()** — минимум всегда хранится в корне (`data[0]`) по
-инварианту кучи → Θ(1), без каких-либо сравнений или перестроений.
+**MinHeap.peekMin()** — the minimum is always stored at the root (`data[0]`)
+due to the heap invariant → Θ(1), requiring no comparisons or restructuring. **MinHeap.extractMin()** — the root is removed, the last element of the array
+is moved to the root, and then it "sinks" (`siftDown`) until the heap
+property is restored. As with `insert`, the path depth is limited by the tree
+height—O(log n) in the worst case, Ω(1) in the best (e.g., a heap with ≤1
+element, or the moved element is already smaller than both children).
 
-**MinHeap.extractMin()** — корень удаляется, последний элемент массива
-переносится в корень, затем "тонет" (`siftDown`) до восстановления свойства
-кучи. Как и для `insert`, глубина пути ограничена высотой дерева — O(log n)
-в худшем случае, Ω(1) в лучшем (например, куча из ≤1 элемента, или
-перемещённый элемент уже меньше обоих потомков).
-
-**Важное наблюдение об "одинаковых по имени, но разных по цене" операциях**:
-`get(index)` у `DynamicArray` — Θ(1), а `get(index)` у `LinkedList` — Θ(n).
-Обе называются `get`, у обеих одна и та же сигнатура и семантика, но
-асимптотика различается кардинально из-за разной физической организации
-памяти (смежный блок vs. разбросанные по куче узлы, связанные указателями).
-Аналогично: `add(index,x)` у обеих структур формально O(n), но у массива это
-стоимость **копирования данных**, а у списка — стоимость **обхода
-указателей** до нужной позиции (сама вставка после этого — Θ(1)); это разные
-физические операции с разными константными множителями (что подтверждается
-экспериментально в разделе 5–6).
+**An important observation regarding operations that share the same name but differ in cost**:
+`get(index)` for `DynamicArray` is Θ(1), whereas `get(index)` for `LinkedList`
+is Θ(n). Both are named `get` and share the same signature and semantics,
+but their asymptotic complexities differ drastically due to their distinct
+physical memory layouts (a contiguous block vs. nodes scattered across the
+heap and linked by pointers). Similarly: `add(index, x)` is formally O(n) for
+both structures, but for the array, the cost stems from **copying data**,
+while for the list, it stems from **traversing pointers** to reach the
+target position (the actual insertion thereafter is Θ(1)); these are distinct
+physical operations with different constant factors (as confirmed
+experimentally in sections 5–6).
 
 ---
 
-## 3. Correctness — доказательства через инварианты цикла
+## 3. Correctness — proofs via loop invariants
 
-Ниже приведены два полных доказательства для двух нетривиальных операций.
-Обе выбранные операции содержат цикл: `DynamicArray.add(index,x)` (вставка со
-сдвигом — из списка допустимых операций задания) и `MinHeap.extractMin`
-(через вспомогательный цикл `siftDown`, восстанавливающий свойство кучи).
+Below are two complete proofs for two non-trivial operations.
+Both selected operations involve a loop: `DynamicArray.add(index, x)`
+(insertion with shifting—from the assignment's list of allowed operations)
+and `MinHeap.extractMin` (via the auxiliary `siftDown` loop, which restores
+the heap property). ### 3.1 Proof 1 — `DynamicArray.add(index, x)`
 
-### 3.1 Доказательство 1 — `DynamicArray.add(index, x)`
-
-Код цикла (после проверки границ и возможного `ensureCapacity`):
+The loop code (following bounds checking and a potential `ensureCapacity` call):
 
 ```java
 for (int i = size; i > index; i--) {
-    data[i] = data[i - 1];
+data[i] = data[i - 1];
 }
 data[index] = x;
 size++;
 ```
 
-Обозначим через `data₀` состояние массива **до** начала цикла (сразу после
-`ensureCapacity`, но до каких-либо сдвигов), а `size` и `index` — фиксированные
-на входе значения (`0 ≤ index ≤ size`).
+Let `data₀` denote the state of the array **before** the loop begins (immediately after
+`ensureCapacity` but before any shifts occur), and let `size` and `index` be the
+values ​​fixed at the input (`0 ≤ index ≤ size`).
 
-**Инвариант цикла I(i):** непосредственно перед проверкой условия `i > index`
-для текущего значения `i` выполняется:
+**Loop invariant I(i):** immediately before the condition `i > index` is checked
+for the current value of `i`, the following holds:
 
-1. для каждого `k`, такого что `i ≤ k ≤ size-1`: `data[k+1] = data₀[k]`
-   (элементы, стоявшие на позициях от `i` и правее, уже сдвинуты на одну
-   позицию вправо);
-2. для каждого `k`, такого что `index ≤ k < i`: `data[k] = data₀[k]`
-   (элементы левее текущего `i` ещё не тронуты и сохраняют исходное значение).
+1. for every `k` such that `i ≤ k ≤ size-1`: `data[k+1] = data₀[k]`
+(elements originally at positions `i` and to the right have already been shifted
+one position to the right);
+2. for every `k` such that `index ≤ k < i`: `data[k] = data₀[k]`
+(elements to the left of the current `i` remain untouched and retain their original values).
 
-**Инициализация.** Перед первой итерацией `i = size`. Условие (1) требует
-рассмотреть `k` в диапазоне `size ≤ k ≤ size-1` — этот диапазон пуст, поэтому
-условие выполняется тривиально (истинно "по пустоте"). Условие (2) требует
-`index ≤ k < size` — цикл ещё не выполнил ни одной итерации, значит массив
-всё ещё равен `data₀` на этих позициях, условие выполняется. Следовательно
-`I(size)` истинно.
+**Initialization.** Before the first iteration, `i = size`. Condition (1) requires
+considering `k` in the range `size ≤ k ≤ size-1`; this range is empty, so the
+condition holds trivially (true "vacuously"). Condition (2) requires
+`index ≤ k < size`; since the loop has not yet performed any iterations, the
+array is still equal to `data₀` at these positions, so the condition holds.
+Therefore, `I(size)` is true. **Maintenance.** Suppose `I(i)` holds for some `i > index`
+(otherwise, the loop has already terminated). The loop body executes `data[i] = data[i-1]`,
+after which `i` is decremented by 1 (let us denote the new value as `i' = i-1`).
 
-**Поддержание (Maintenance).** Пусть `I(i)` истинно для некоторого `i > index`
-(иначе цикл уже завершился). Тело цикла выполняет `data[i] = data[i-1]`, после
-чего `i` уменьшается на 1 (обозначим новое значение `i' = i-1`).
+- The value written to `data[i]`: according to point (2) of the invariant `I(i)`, since
+`index ≤ i-1 < i`, we have `data[i-1] = data₀[i-1]` **before** the assignment. 
+After the assignment, `data[i] = data₀[i-1]`. This is exactly what is required by
+point (1) of the new version of the invariant for `k = i-1 = i'`: `data[i'+1] = data₀[i']`.
+- For other `k` such that `i ≤ k ≤ size-1` (i.e., `i' < k ≤ size-1`), the cell
+`data[k+1]` was not modified in this iteration; thus, by the IH, `data[k+1] = data₀[k]`
+still holds.
+- For `k` such that `index ≤ k < i'`, the cell `data[k]` was also not modified in this
+iteration (the loop only affects `data[i]`); thus, by the IH, `data[k] = data₀[k]`
+remains true.
 
-- Значение, записанное в `data[i]`: по пункту (2) инварианта `I(i)`, так как
-  `index ≤ i-1 < i`, имеем `data[i-1] = data₀[i-1]` **до** присваивания.
-  После присваивания `data[i] = data₀[i-1]`. Это в точности требуемое по
-  пункту (1) новой версии инварианта для `k = i-1 = i'`: `data[i'+1] = data₀[i']`.
-- Для остальных `k` с `i ≤ k ≤ size-1` (то есть `i' < k ≤ size-1`) ячейка
-  `data[k+1]` не изменялась в этой итерации, значит по IH `data[k+1] = data₀[k]`
-  сохраняется.
-- Для `k` с `index ≤ k < i'` ячейка `data[k]` также не изменялась в этой
-  итерации (цикл трогает только `data[i]`), значит по IH `data[k] = data₀[k]`
-  по-прежнему верно.
+Thus, after one iteration, `I(i')` = `I(i-1)` holds, which is what was required to
+maintain the invariant.
 
-Таким образом, после одной итерации выполняется `I(i')` = `I(i-1)`, что и
-требовалось для поддержания инварианта.
+**Termination.** The variable `i` strictly decreases in each iteration and is
+an integer; it is bounded with the value `index` as the lower bound; consequently, the loop
+terminates in a finite number of steps, precisely when `i = index` (the condition
+`i > index` becomes false).
 
-**Терминация.** Переменная `i` строго убывает на каждой итерации и является
-целым числом, ограниченным снизу значением `index`; следовательно цикл
-завершается за конечное число шагов, ровно когда `i = index` (условие
-`i > index` становится ложным).
+**Correctness based on the invariant at termination.** Upon exiting the loop, `i = index`,
+and `I(index)` asserts:
 
-**Корректность из инварианта при терминации.** При выходе из цикла `i = index`,
-и `I(index)` утверждает:
+1. for all `k` such that `index ≤ k ≤ size-1`: `data[k+1] = data₀[k]` — that is, **all**
+original elements that were in the range `[index, size-1]` are now
+located at positions `[index+1, size]`, preserving their relative order;
+2. for `k` such that `index ≤ k < index` — the range is empty, so nothing is asserted
+(nor is it required — these positions were the ones freed up for the insertion).
 
-1. для всех `k` с `index ≤ k ≤ size-1`: `data[k+1] = data₀[k]` — то есть **все**
-   исходные элементы, находившиеся в диапазоне `[index, size-1]`, теперь
-   находятся на позициях `[index+1, size]`, сохраняя относительный порядок;
-2. для `k` с `index ≤ k < index` — диапазон пуст, ничего не утверждается (и не
-   требуется — эти позиции как раз были освобождены под вставку).
-
-Следовательно позиция `data[index]` теперь свободна от старого значения (там
-записана копия `data₀[index]`, но это будет немедленно перезаписано). Строка
-`data[index] = x` корректно помещает новый элемент ровно в требуемую позицию,
-а `size++` синхронизирует логический размер с новым содержимым. Итоговый
-массив — это в точности `data₀[0..index-1]`, затем `x`, затем
-`data₀[index..size-1]`, что и является определением операции "вставить `x`
-по индексу `index`". Тем самым алгоритм доказан корректным. ∎
+Consequently, the position `data[index]` is now free of the old value (a copy of
+`data₀[index]` is written there, but it will be immediately overwritten). The line
+`data[index] = x` correctly places the new element exactly at the required position,
+and `size++` synchronizes the logical size with the new content. The resulting
+array consists exactly of `data₀[0..index-1]`, followed by `x`, followed by
+`data₀[index..size-1]`, which is the definition of the operation "insert `x`
+at index `index`". Thus, the algorithm is proven correct. ∎
 
 ---
 
-### 3.2 Доказательство 2 — `MinHeap.extractMin()` (через `siftDown`)
+### 3.2 Proof 2 — `MinHeap.extractMin()` (via `siftDown`)
 
-`extractMin()` сохраняет корень как результат, перемещает последний элемент
-массива в корень, уменьшает `size` и — если куча не опустела — вызывает
+`extractMin()` saves the root as the result, moves the last element of the
+array to the root, decrements `size`, and—if the heap is not empty—calls
 `siftDown(0)`:
 
 ```java
 while (true) {
-    int l = left(i), r = right(i);
-    int smallest = i;
-    if (l < size && data[l] < data[smallest]) smallest = l;
-    if (r < size && data[r] < data[smallest]) smallest = r;
-    if (smallest != i) { swap(i, smallest); i = smallest; }
-    else break;
+int l = left(i), r = right(i); 
+int smallest = i; 
+if (l < size && data[l] < data[smallest]) smallest = l; 
+if (r < size && data[r] < data[smallest]) smallest = r; 
+if (smallest != i) { swap(i, smallest); i = smallest; }
+else break;
 }
 ```
 
-Пусть массив `data[0..size-1]` интерпретируется как полное бинарное дерево
-стандартным образом (`left(i)=2i+1`, `right(i)=2i+2`, `parent(i)=(i-1)/2`).
-Для индекса `j` через `subtree(j)` обозначим поддерево, укоренённое в `j`.
+Let the array `data[0..size-1]` be interpreted as a complete binary tree
+in the standard way (`left(i)=2i+1`, `right(i)=2i+2`, `parent(i)=(i-1)/2`).
+For an index `j`, let `subtree(j)` denote the subtree rooted at `j`.
 
-**Инвариант цикла I(i):** непосредственно перед каждой проверкой условия
-цикла для текущего значения `i`:
+**Loop invariant I(i):** immediately before each check of the loop condition
+for the current value of `i`:
 
-1. если `left(i) < size`, то `subtree(left(i))` является корректной
-   min-кучей (свойство кучи выполняется во всех узлах этого поддерева);
-2. если `right(i) < size`, то `subtree(right(i))` является корректной
-   min-кучей;
-3. каждый узел массива, **не принадлежащий** `subtree(i)`, удовлетворяет
-   свойству кучи относительно своего родителя (то есть единственное место,
-   где свойство кучи может быть нарушено — это сам узел `i` относительно
-   его потомков).
+1. if `left(i) < size`, then `subtree(left(i))` is a valid
+min-heap (the heap property holds for all nodes in this subtree);
+2. if `right(i) < size`, then `subtree(right(i))` is a valid
+min-heap;
+3. every node in the array **not belonging** to `subtree(i)` satisfies
+the heap property with respect to its parent (i.e., the only place
+where the heap property might be violated is at node `i` itself
+relative to its descendants). **Initialization.** Before the first iteration, `i = 0`, meaning `subtree(i)` is the entire heap. Point (3) is trivial (there are no nodes outside `subtree(0)`). Prior to the `siftDown` call, the old root was removed and the last array element was moved to position 0; no other elements were affected. Since the entire heap was a valid min-heap before the removal, both subtrees `subtree(left(0))` and `subtree(right(0))` (if they exist) remain valid min-heaps—they have not physically changed. Consequently, `I(0)` holds true.
 
-**Инициализация.** Перед первой итерацией `i = 0`, то есть `subtree(i)` —
-это вся куча. Пункт (3) тривиален (нет узлов вне `subtree(0)`). До вызова
-`siftDown` был удалён старый корень, а последний элемент массива перемещён на
-позицию 0; при этом **не затрагивались** никакие другие элементы. Так как до
-удаления вся куча была корректной min-кучей, оба поддерева `subtree(left(0))`
-и `subtree(right(0))` (если существуют) остались корректными min-кучами —
-они физически не изменились. Следовательно `I(0)` истинно.
+**Maintenance.** Suppose `I(i)` holds true. According to points (1)–(2), the roots of `left(i)` and `right(i)` (if they exist) store the minimum values ​​of their respective subtrees (a property of the root of a valid min-heap). Therefore, the three comparisons in the loop body (`data[i]` against `data[left(i)]` and `data[right(i)]`) correctly determine `smallest`—the index of the minimum value among `{data[i], data[left(i)], data[right(i)]}` (accounting for any missing children).
 
-**Поддержание.** Пусть `I(i)` истинно. По пунктам (1)–(2) корни `left(i)` и
-`right(i)` (если существуют) хранят минимумы своих поддеревьев (это свойство
-корня валидной min-кучи). Поэтому три сравнения в теле цикла
-(`data[i]` против `data[left(i)]`, `data[right(i)]`) корректно вычисляют
-`smallest` — индекс минимального из значений `{data[i], data[left(i)],
-data[right(i)]}` (с учётом отсутствующих потомков).
+*Case A: `smallest == i`.* In this case, `data[i] ≤ data[left(i)]` and `data[i] ≤ data[right(i)]` (where these exist); combined with (1)–(2), this implies that `subtree(i)` now fully satisfies the heap property. The loop terminates (`break`), which is precisely the required postcondition. *Case B: `smallest ≠ i`.* Without loss of generality, let `smallest = left(i)`
+(the case for `right(i)` is symmetric). After `swap(i, smallest)`:
+- node `i` now holds the value that was the minimum of the three, so
+`data[i] ≤ data[left(i)]` and `data[i] ≤ data[right(i)]` with respect to the **new**
+values ​​at these positions—the local heap property between `i` and its
+children is restored;
+- the subtree `subtree(right(i))` remains physically untouched by the swap;
+by the IH, it was a valid min-heap;
+- node `left(i)` (the new position `i' = left(i)`) has received the old value
+of `data[i]`. Its own subtrees, `subtree(left(left(i)))` and
+`subtree(right(left(i)))`, were not affected by the swap (only the value
+at node `left(i)` changed, not its children), and since `subtree(left(i))`
+was a valid min-heap prior to the swap (by the IH), these sub-subtrees
+were and remain valid min-heaps, regardless of the value at their
+common ancestor.
 
-*Случай A: `smallest == i`.* Тогда `data[i] ≤ data[left(i)]` и
-`data[i] ≤ data[right(i)]` (когда они существуют), и вместе с (1)–(2) это
-означает, что `subtree(i)` теперь полностью удовлетворяет свойству кучи —
-цикл прерывается (`break`), это ровно то постусловие, что требовалось.
+Thus, for the new `i' = smallest`: `subtree(left(i'))` and
+`subtree(right(i'))` are valid min-heaps (conditions (1)–(2) are met), and
+all nodes outside `subtree(i')` (specifically the old `i`, which is now
+the parent of `i'`) satisfy the heap property with respect to their parent—
+this was established above; furthermore, by the IH, this held for all nodes
+outside `subtree(i)` and remains true, since `subtree(i') ⊂ subtree(i)`. Thus, `I(i')`
+holds true, and the invariant is maintained.
 
-*Случай B: `smallest ≠ i`.* Без ограничения общности `smallest = left(i)`
-(случай с `right(i)` симметричен). После `swap(i, smallest)`:
-- узел `i` теперь хранит значение, бывшее минимумом среди трёх, поэтому
-  `data[i] ≤ data[left(i)]` и `data[i] ≤ data[right(i)]` относительно **новых**
-  значений на этих позициях — локальное свойство кучи между `i` и его
-  потомками восстановлено;
-- поддерево `subtree(right(i))` физически не тронуто swap'ом, по IH оно
-  оставалось корректной min-кучей;
-- узел `left(i)` (новое положение `i' = left(i)`) получил старое значение
-  `data[i]`. Его собственные поддеревья `subtree(left(left(i)))` и
-  `subtree(right(left(i)))` не были затронуты обменом (менялось только
-  значение в узле `left(i)`, а не его потомки), и поскольку до обмена
-  `subtree(left(i))` было корректной min-кучей (по IH), эти под-поддеревья
-  были и остаются корректными min-кучами независимо от значения в их
-  общем предке.
+**Termination.** In each "continuing" iteration, `i` is replaced by
+`left(i)` or `right(i)`; that is, it moves one level **deeper** into
+the tree. The depth of a tree with `size` nodes is finite and equals `⌊log₂ size⌋`.
+Consequently, either `i` reaches a leaf (in which case both conditions `l < size`
+and `r < size` are false, `smallest` is guaranteed to remain `i`, and a `break` occurs),
+or the condition `smallest == i` is naturally met beforehand. In
+either case, the loop terminates in no more than `⌊log₂ size⌋ + 1` iterations.
 
-Таким образом для нового `i' = smallest`: `subtree(left(i'))` и
-`subtree(right(i'))` — корректные min-кучи (условия (1)–(2) выполнены), а
-все узлы вне `subtree(i')` (в частности сам старый `i`, теперь являющийся
-родителем `i'`) удовлетворяют свойству кучи относительно родителя — это было
-установлено выше, плюс по IH это было верно для всех узлов вне `subtree(i)`
-и осталось верным, так как `subtree(i') ⊂ subtree(i)`. Значит `I(i')`
-истинно, инвариант поддержан.
-
-**Терминация.** На каждой "продолжающейся" итерации `i` заменяется на
-`left(i)` или `right(i)`, то есть переходит на один уровень **глубже** в
-дереве. Глубина дерева из `size` узлов конечна и равна `⌊log₂ size⌋`.
-Следовательно либо `i` достигает листа (тогда оба условия `l < size`,
-`r < size` ложны, `smallest` гарантированно остаётся `i`, происходит `break`),
-либо раньше выполняется условие `smallest == i` естественным образом. В
-обоих случаях цикл завершается не более чем за `⌊log₂ size⌋ + 1` итераций.
-
-**Корректность из инварианта при терминации.** Цикл завершается только через
-`break` в случае A, где было показано, что в этот момент `subtree(i)`
-удовлетворяет свойству кучи (корень ≤ обоих потомков, а поддеревья потомков
-уже были кучами). По инварианту (3) все узлы вне `subtree(i)` также
-удовлетворяют свойству кучи относительно родителя. Значит **вся** структура
-`data[0..size-1]` — корректная min-куча. Так как `size` было уменьшено на 1
-ещё до вызова `siftDown`, а возвращённое значение — это значение корня,
-сохранённое **до** каких-либо перестановок, `extractMin()` корректно:
-возвращает исходный минимум и оставляет после себя корректную min-кучу
-размера `size-1`. ∎
+**Correctness based on the invariant at termination.** The loop terminates only via
+a `break` in case A, where it was shown that at that moment `subtree(i)`
+satisfies the heap property (the root is ≤ both children, and the children's
+subtrees were already heaps). According to invariant (3), all nodes outside
+`subtree(i)` also satisfy the heap property relative to their parents. Thus, the
+**entire** structure `data[0..size-1]` is a valid min-heap. Since `size` was
+decremented by 1 before the `siftDown` call, and the returned value is the root
+value saved **before** any swaps, `extractMin()` is correct:
+it returns the original minimum and leaves behind a valid min-heap
+of size `size-1`. ∎
 
 ---
 
 ## 4. Experimental Setup
 
-- **n (начальный размер структуры):** 100, 1 000, 10 000, 100 000 — одни и те
-  же значения для всех применимых workload'ов (раздел 6 задания).
-- **m (число операций в workload'е):** зафиксировано на ворклоад: 10 000
-  случайных `get` (Workload 1), 1 000 `contains` (Workload 2), по 1 000
-  вставок/удалений в начале и в середине (Workload 3), `n` вставок и `n`
-  извлечений для кучи (Workload 4). Определение ворклоада не меняется при
-  изменении `n`, как того требует задание.
-- **Повторы:** каждое измерение времени выполняется **5 раз**, отчёт
-  содержит **среднее** время.
-- **Таймер:** `System.nanoTime()`, засекается строго вокруг измеряемого
-  участка кода (без генерации входных данных и без вывода в консоль внутри
-  измеряемого блока).
-- **Случайный seed:** `new Random(42)` для построения исходной структуры,
-  `new Random(43)` — для генерации случайных индексов доступа (Workload 1),
-  `new Random(44)` — для генерации значений поиска (Workload 2). Использование
-  разных, но фиксированных seed'ов гарантирует воспроизводимость всего
-  эксперимента при сохранении независимости выборок.
-- **Среда запуска:** OpenJDK 21 (`java -Xmx4g Benchmark`), однопоточно, без
-  какой-либо параллельной нагрузки в контейнере во время замера.
-- **Ограничение задания:** генерация входных данных выполняется *до* старта
-  таймера; печать/логирование не входит в измеряемый интервал.
+- **n (initial structure size):** 100, 1,000, 10,000, 100,000 — the same values ​​for all applicable workloads (Section 6 of the assignment).
+- **m (number of operations in the workload):** fixed per workload: 10,000 random `get` operations (Workload 1), 1,000 `contains` operations (Workload 2), 1,000 insertions/deletions each at the beginning and middle (Workload 3), and `n` insertions and `n` extractions for the heap (Workload 4). The workload definition does not change when `n` changes, as required by the assignment.
+- **Repetitions:** each timing measurement is performed **5 times**; the report contains the **average** time.
+- **Timer:** `System.nanoTime()`, measured strictly around the code section being tested (excluding input data generation and console output within the measured block).
+- **Random seed:** `new Random(42)` for building the initial structure, `new Random(43)` for generating random access indices (Workload 1), and `new Random(44)` for generating search values ​​(Workload 2). Using different yet fixed seeds ensures the reproducibility of the entire experiment while maintaining sample independence.
+- **Execution environment:** OpenJDK 21 (`java -Xmx4g Benchmark`), single-threaded, with no concurrent load in the container during measurement.
+- **Assignment constraint:** input data generation is performed *before* the timer starts; Printing/logging is not included in the measured interval.
 
-Полный исходный код харнесса — `src/Benchmark.java`; воспроизвести все
-таблицы можно командой:
+The full source code for the harness is in `src/Benchmark.java`; all tables
+can be reproduced using the following commands:
 
 ```bash
 javac -d out src/*.java
@@ -362,67 +325,57 @@ python3 scripts/make_plots.py
 
 ## 5. Experimental Results
 
-### 5.1 Workload 1 — Random Access (`get(index)`, 10 000 обращений)
+### 5.1 Workload 1 — Random Access (`get(index)`, 10,000 accesses)
 
-| n       | Структура     | Среднее время (мс) | Обращений (accesses) | Теоретическая сложность |
+| n       | Structure     | Average time (ms) | Accesses | Theoretical complexity |
 |---------|---------------|--------------------:|----------------------:|--------------------------|
-| 100     | DynamicArray  | 1.008 | 10 000 | Θ(1) на операцию |
-| 100     | LinkedList    | 2.423 | 502 068 | Θ(n) на операцию |
-| 1 000   | DynamicArray  | 0.043 | 10 000 | Θ(1) |
-| 1 000   | LinkedList    | 16.14 | 4 953 268 | Θ(n) |
-| 10 000  | DynamicArray  | 0.013 | 10 000 | Θ(1) |
-| 10 000  | LinkedList    | 108.3 | 49 618 268 | Θ(n) |
-| 100 000 | DynamicArray  | 0.007 | 10 000 | Θ(1) |
-| 100 000 | LinkedList    | 1349.7 | 493 288 268 | Θ(n) |
+| 100     | DynamicArray  | 1.008 | 10,000 | Θ(1) per operation |
+| 100     | LinkedList    | 2.423 | 502,068 | Θ(n) per operation |
+| 1,000   | DynamicArray  | 0.043 | 10,000 | Θ(1) |
+| 1,000   | LinkedList    | 16.14 | 4,953,268 | Θ(n) |
+| 10,000  | DynamicArray  | 0.013 | 10,000 | Θ(1) |
+| 10,000  | LinkedList    | 108.3 | 49,618,268 | Θ(n) |
+| 100,000 | DynamicArray  | 0.007 | 10,000 | Θ(1) |
+| 100,000 | LinkedList    | 1349.7 | 493,288,268 | Θ(n) | ![Workload 1 — time](results/plots/workload1_time.png)
+![Workload 1 — accesses](results/plots/workload1_accesses.png)
 
-![Workload 1 — время](results/plots/workload1_time.png)
-![Workload 1 — обращения](results/plots/workload1_accesses.png)
+**Analysis.** The time for `DynamicArray.get` shows virtually no growth with `n` (it even decreases slightly at large `n` values—an effect of JIT/CPU cache warm-up during repeated runs), which is fully consistent with the theoretical Θ(1) complexity. `LinkedList.get` demonstrates linear growth in the number of "pointer traversals" (`accesses`)—roughly proportional to `n`—and the execution time grows almost linearly alongside it (increasing more than 500-fold as `n` increases 1,000-fold, accounting for index randomness and the overhead of cache misses during traversals of pointers scattered across the heap). The experimental results **fully align** with the theoretical estimates: Θ(1) for the array and Θ(n) for the list.
 
-**Анализ.** Время `DynamicArray.get` практически не растёт с `n` (даже
-немного падает при больших `n` — эффект прогрева JIT/кэша процессора на
-повторных запусках), что полностью согласуется с теоретической Θ(1).
-`LinkedList.get` демонстрирует линейный рост числа "переходов по указателям"
-(`accesses`) — примерно пропорционально `n`, и время растёт почти линейно
-вместе с ним (рост более чем в 500× при увеличении n в 1000×, с учётом
-случайности индексов и накладных расходов на промахи кэша при переходах по
-указателям, разбросанным в куче). Экспериментальные результаты **полностью
-согласуются** с теоретической оценкой: Θ(1) для массива и Θ(n) для списка.
+### 5.2 Workload 2 — Search (`contains(x)`, 1,000 queries)
 
-### 5.2 Workload 2 — Search (`contains(x)`, 1 000 запросов)
-
-| n       | Структура     | Среднее время (мс) | Сравнений | Теоретическая сложность |
+| n       | Structure     | Average time (ms) | Comparisons | Theoretical complexity |
 |---------|---------------|--------------------:|----------:|---------------------------|
-| 100     | DynamicArray  | 1.629 | 75 969 | Θ(n) на запрос |
-| 100     | LinkedList    | 1.668 | 75 969 | Θ(n) |
-| 1 000   | DynamicArray  | 0.642 | 740 069 | Θ(n) |
-| 1 000   | LinkedList    | 2.466 | 740 069 | Θ(n) |
-| 10 000  | DynamicArray  | 7.822 | 7 566 069 | Θ(n) |
-| 10 000  | LinkedList    | 24.57 | 7 566 069 | Θ(n) |
-| 100 000 | DynamicArray  | 144.6 | 74 536 069 | Θ(n) |
-| 100 000 | LinkedList    | 264.6 | 74 536 069 | Θ(n) |
+| 100     | DynamicArray  | 1.629 | 75,969 | Θ(n) per query |
+| 100     | LinkedList    | 1.668 | 75,969 | Θ(n) |
+| 1,000   | DynamicArray  | 0.642 | 740,069 | Θ(n) |
+| 1,000   | LinkedList    | 2.466 | 740,069 | Θ(n) |
+| 10,000 | DynamicArray | 7.822 | 7 566 069 | Θ(n) |
+| 10,000 | LinkedList | 24.57 | 7 566 069 | Θ(n) |
+| 100,000 | DynamicArray | 144.6 | 74,536,069 | Θ(n) |
+| 100,000 | LinkedList    | 264.6 | 74,536,069 | Θ(n) |
 
-![Workload 2 — время](results/plots/workload2_time.png)
-![Workload 2 — сравнения](results/plots/workload2_comparisons.png)
+![Workload 2 — time](results/plots/workload2_time.png)
+![Workload 2 — comparisons](results/plots/workload2_comparisons.png)
 
-**Анализ.** Число сравнений у обеих структур **идентично** (обе выполняют
-линейный поиск по одним и тем же данным с одинаковым множеством запросов) —
-это ожидаемо и подтверждает, что алгоритмически обе реализации `contains`
-эквивалентны, Θ(n). Разница — исключительно во **времени**: массив в 1.5–3
-раза быстрее списка при одинаковом числе сравнений. Причина — константные
-факторы: последовательный доступ к `Object[]` даёт предсказуемые обращения к
-памяти (аппаратный prefetcher эффективно подгружает кэш-линии), тогда как
-обход связного списка — это разыменование указателя на узел, размещённый в
-произвольном месте кучи (много кэш-промахов). Это яркий пример того, что
-**два алгоритма с одинаковой Θ(n) могут иметь разное реальное время
-выполнения** из-за локальности данных.
+**Analysis.** The number of comparisons for both structures is **identical** (both perform
+a linear search over the same data using the same set of queries)—
+this is expected and confirms that, algorithmically, both `contains` implementations
+are equivalent, i.e., Θ(n). The difference lies solely in **time**: the array is 1.5–3
+times faster than the list despite the same number of comparisons. The reason
+is constant factors: sequential access to an `Object[]` results in predictable
+memory accesses (the hardware prefetcher efficiently loads cache lines),
+whereas traversing a linked list involves dereferencing a pointer to a node
+located at an arbitrary spot in the heap (causing many cache misses). This is a
+prime example of how **two algorithms with the same Θ(n) complexity can have
+different actual execution times** due to data locality.
 
-### 5.3 Workload 3 — Insertion / Removal (1 000 операций, begin vs middle)
+### 5.3 Workload 3 — Insertion / Removal (1,000 operations, begin vs. middle)
 
-**Вставка (insert):**
+**Insertion:**
 
-| n       | Структура    | Позиция | Время (мс) | Перемещений |
+| n       | Structure    | Position | Time (ms) | Moves |
 |---------|--------------|---------|-----------:|-------------:|
-| 100     | DynamicArray | begin   | 6.292 | 601 420 |
+| 100     | DynamicArray | begin   | 6.292 | 601,420 |
 | 100     | DynamicArray | middle  | 0.291 | 301 920 |
 | 100     | LinkedList   | begin   | 0.158 | 0 |
 | 100     | LinkedList   | middle  | 2.691 | 298 500 |
@@ -439,61 +392,61 @@ python3 scripts/make_plots.py
 | 100 000 | LinkedList   | begin   | 0.040 | 0 |
 | 100 000 | LinkedList   | middle  | 103.1 | 50 248 500 |
 
-**Удаление (remove):**
+**Removal (remove):**
 
-| n       | Структура    | Позиция | Время (мс) | Перемещений |
+| n       | Structure    | Position | Time (ms) | Moves |
 |---------|--------------|---------|-----------:|-------------:|
-| 100     | DynamicArray | begin   | 0.861 | 4 950 |
-| 100     | DynamicArray | middle  | 0.872 | 2 450 |
-| 100     | LinkedList   | begin   | 0.012 | 0 |
-| 100     | LinkedList   | middle  | 0.018 | 2 401 |
-| 1 000   | DynamicArray | begin   | 0.390 | 499 500 |
-| 1 000   | DynamicArray | middle  | 0.264 | 249 500 |
-| 1 000   | LinkedList   | begin   | 0.417 | 0 |
-| 1 000   | LinkedList   | middle  | 1.288 | 249 001 |
-| 10 000  | DynamicArray | begin   | 7.984 | 9 499 500 |
-| 10 000  | DynamicArray | middle  | 2.574 | 4 749 500 |
-| 10 000  | LinkedList   | begin   | 0.011 | 0 |
-| 10 000  | LinkedList   | middle  | 10.18 | 4 749 000 |
-| 100 000 | DynamicArray | begin   | 69.19 | 99 499 500 |
-| 100 000 | DynamicArray | middle  | 26.33 | 49 749 500 |
-| 100 000 | LinkedList   | begin   | 0.035 | 0 |
-| 100 000 | LinkedList   | middle  | 130.1 | 49 749 000 |
+| 100     | DynamicArray | begin | 0.861 | 4,950 |
+| 100 | DynamicArray | middle | 0.872 | 2 450 |
+| 100 | LinkedList | begin | 0.012 | 0 |
+| 100 | LinkedList | middle | 0.018 | 2 401 |
+| 1,000 | DynamicArray | begin | 0.390 | 499,500 |
+| 1,000 | DynamicArray | middle | 0.264 | 249,500 |
+| 1,000 | LinkedList | begin | 0.417 | 0 |
+| 1,000 | LinkedList | middle | 1.288 | 249 001 |
+| 10,000 | DynamicArray | begin | 7.984 | 9,499,500 |
+| 10,000 | DynamicArray | middle | 2.574 | 4,749,500 |
+| 10,000 | LinkedList | begin | 0.011 | 0 |
+| 10,000 | LinkedList | middle | 10.18 | 4,749,000 |
+| 100,000 | DynamicArray | begin | 69.19 | 99,499,500 |
+| 100,000 | DynamicArray | middle | 26.33 | 49,749,500 |
+| 100,000 | LinkedList | begin | 0.035 | 0 |
+| 100,000 | LinkedList | middle | 130.1 | 49,749,000 |
 
-![Workload 3 — вставка](results/plots/workload3_insert_time.png)
-![Workload 3 — удаление](results/plots/workload3_remove_time.png)
-![Workload 3 — перемещения](results/plots/workload3_movements.png)
+![Workload 3 — insertion](results/plots/workload3_insert_time.png)
+![Workload 3 — removal](results/plots/workload3_remove_time.png)
+![Workload 3 — movements](results/plots/workload3_movements.png)
 
-**Анализ.** Картина ровно та, что предсказывает теория, если учесть
-структурные особенности:
+**Analysis.** The results match theoretical predictions exactly when
+structural characteristics are taken into account:
 
-- **Вставка/удаление в начало (`index=0`) у `LinkedList` — Θ(1)**: счётчик
-  перемещений равен **0** при любом `n`, время не растёт с `n` (остаётся
-  порядка 10–100 микросекунд даже при n=100 000). Это подтверждается графиком:
-  линия `LinkedList / begin` практически горизонтальна.
-- **Вставка/удаление в начало у `DynamicArray` — O(n)**: число "перемещений"
-  (`movementCount`) растёт линейно с `n` (для 1000 вставок в начало при
-  n=100 000 требуется свыше 10⁸ сдвигов элементов), время растёт
-  соответственно — с 6.3 мс (n=100) до 63.4 мс (n=100 000) — рост
-  практически линеен, что согласуется с Θ(n) на операцию.
-- **Вставка/удаление в середину (`index=n/2`) у обеих структур — O(n)**:
-  у массива это стоимость сдвига ~n/2 элементов; у списка — стоимость
-  прохода ~n/2 указателей, чтобы **добраться** до середины (сама вставка
-  после этого — O(1), но доминирует именно проход). Оба растут линейно, но
-  `LinkedList/middle` **медленнее** `DynamicArray/middle` при одинаковой
-  асимптотике — причина та же, что и в Workload 2: последовательный доступ
-  к массиву эффективнее для кэша процессора, чем обход указателей.
+- **Insertion/removal at the beginning (`index=0`) for `LinkedList` — Θ(1)**: the
+movement counter is **0** for any `n`, and the time does not increase with `n`
+(remaining in the range of 10–100 microseconds even at n=100,000). This is
+confirmed by the graph: the `LinkedList / begin` line is practically horizontal.
+- **Insertion/removal at the beginning for `DynamicArray` — O(n)**: the number
+of "movements" (`movementCount`) grows linearly with `n` (1,000 insertions
+at the beginning with n=100,000 require over 10⁸ element shifts), and the
+time increases accordingly—from 6.3 ms (n=100) to 63.4 ms (n=100,000)—showing
+near-linear growth, consistent with a Θ(n) cost per operation.
+- **Insertion/removal in the middle (`index=n/2`) for both structures — O(n)**:
+for the array, this represents the cost of shifting ~n/2 elements; for the
+list, it represents the cost of traversing ~n/2 pointers to **reach** the
+middle (the actual insertion is O(1), but the traversal dominates the cost). Both grow linearly, but
+`LinkedList/middle` is **slower** than `DynamicArray/middle` despite having the same
+asymptotic complexity—the reason is the same as in Workload 2: sequential access
+to an array is more efficient for the CPU cache than pointer traversal.
 
-Таким образом, эксперимент прекрасно иллюстрирует пункт задания "почему
-физическая организация данных влияет на производительность": **у списка
-операции в начало практически бесплатны, а у массива — самые дорогие**
-(нужно сдвинуть весь массив); в середине оба вынуждены линейно
-"добираться"/"сдвигать", и здесь массив выигрывает за счёт локальности
-памяти, несмотря на одинаковую O(n).
+Thus, the experiment perfectly illustrates the assignment point regarding "why
+physical data organization affects performance": **for a list, operations at the
+beginning are virtually free, whereas for an array, they are the most expensive**
+(requiring the entire array to be shifted); in the middle, both are forced to
+linearly "reach" or "shift" elements, and here the array wins due to memory
+locality, despite the identical O(n) complexity.
 
 ### 5.4 Workload 4 — Priority Processing (Min-Heap)
 
-| n       | Фаза        | Время (мс) | Сравнений | Порядок ↑ |
+| n       | Phase       | Time (ms) | Comparisons | Order ↑ |
 |---------|-------------|-----------:|----------:|:---------:|
 | 100     | insert (n×) | 0.275 | 206 | ✓ |
 | 100     | extractMin (n×) | 0.594 | 863 | ✓ |
@@ -504,147 +457,127 @@ python3 scripts/make_plots.py
 | 100 000 | insert (n×) | 3.717 | 227 857 | ✓ |
 | 100 000 | extractMin (n×) | 53.03 | 2 831 426 | ✓ |
 
-![Workload 4 — время](results/plots/workload4_time.png)
-![Workload 4 — сравнения](results/plots/workload4_comparisons.png)
+![Workload 4 — time](results/plots/workload4_time.png)
+![Workload 4 — comparisons](results/plots/workload4_comparisons.png)
 
-**Анализ.** Теоретически суммарная стоимость `n` вставок в изначально
-пустую кучу — O(n log n) (в лучшем случае даже O(n), но в среднем/худшем —
-n·O(log n)); аналогично для `n` извлечений. Число сравнений растёт
-быстрее, чем линейно, но медленнее, чем n·log₂n, что видно из данных:
-при увеличении `n` в 10× (10 000 → 100 000) число сравнений при `insert`
-выросло лишь в ~10×, а не в 10·log-раз — значительная доля вставок
-попадает близко к корню и не всплывает на полную высоту (типично для
-случайных данных, реальная средняя высота всплытия намного меньше
-log₂n). `extractMin`, напротив, показывает более выраженный
-n·log n-подобный рост (сравнений выросло почти в 13×, время — почти в 8×
-при десятикратном росте `n`), поскольку тонущий элемент чаще проходит
-весь путь до листа. `peekMin()` не тестировался отдельным замером времени
-(это тривиальная Θ(1)-операция `return data[0]`, что подтверждено в
-`Tests.java`). Во всех прогонах извлечённая последовательность оказалась
-**строго неубывающей** (`order_ok = true` для всех n) — это прямое
-экспериментальное подтверждение корректности `extractMin`, доказанной
-формально в разделе 3.2.
+**Analysis.** Theoretically, the total cost of `n` insertions into an initially
+empty heap is O(n log n) (even O(n) in the best case, but n·O(log n)
+on average/in the worst case); the same applies to `n` extractions. The number of comparisons grows
+faster than linearly but slower than $n \log_2 n$, as evidenced by the data:
+when `n` increased tenfold (10,000 → 100,000), the number of comparisons for `insert`
+grew only ~10-fold, rather than by a factor of $10 \log n$—a significant proportion of insertions
+occur close to the root and do not "bubble up" to the full height (typical for
+random data; the actual average rise height is much less than $\log_2 n$).
+`extractMin`, in contrast, exhibits more pronounced $n \log n$-like growth
+(comparisons increased nearly 13-fold, time nearly 8-fold for a tenfold increase in `n`),
+since the sinking element frequently travels all the way down to a leaf.
+`peekMin()` was not tested via a separate timing measurement
+(it is a trivial $\Theta(1)$ operation—`return data[0]`—as confirmed in
+`Tests.java`). In all runs, the extracted sequence proved to be
+**strictly non-decreasing** (`order_ok = true` for all `n`); this serves as direct
+experimental confirmation of the correctness of `extractMin`, which was
+formally proven in Section 3.2.
 
 ---
 
 ## 6. Discussion
 
-**1. Как рост `n` влияет на каждый workload?**
-Random Access и `get` у списка растут линейно с n; у массива — не растут.
-Search растёт линейно у обеих структур (по числу сравнений одинаково, по
-времени — с разным коэффициентом). Insert/Remove в начало у списка не
-растут, у массива растут линейно; в середине растут линейно у обеих. Heap
-insert/extract растут "почти линейно" по числу операций с
-логарифмическим множителем на каждую отдельную операцию.
+**1. How does the growth of `n` affect each workload?**
+Random access and `get` operations for the list grow linearly with `n`,
+whereas for the array, they do not grow.
+Search grows linearly for both structures (the number of comparisons is identical,
+though the time coefficients differ). Insert/Remove operations at the beginning
+do not grow for the list but grow linearly for the array;
+in the middle, they grow linearly for both. Heap
+`insert`/`extract` operations grow "almost linearly" with the number of operations,
+incurring a logarithmic factor for each individual operation.
 
-**2. Какие результаты согласуются с теорией?**
-Практически все: Θ(1) `get`/`add` у массива, Θ(n) `get` у списка, Θ(1)
-`add`/`remove` в начало у списка, O(n) `add`/`remove` у массива,
-Θ(n) `contains` у обеих структур (число сравнений точно совпало между
-структурами), O(log n)-характер операций кучи (сравнений растёт
-существенно медленнее, чем n).
+**2. Which results align with the theory?**
+Practically all of them: Θ(1) `get`/`add` for arrays, Θ(n) `get` for lists, Θ(1)
+`add`/`remove` at the beginning for lists, O(n) `add`/`remove` for arrays,
+Θ(n) `contains` for both structures (the number of comparisons matched
+exactly between the structures), and the O(log n) nature of heap operations
+(the number of comparisons grows significantly slower than n).
 
-**3. Где результаты расходятся с теоретическим предсказанием?**
-При очень малых `n` (100, отчасти 1000) время `DynamicArray` иногда
-оказывается *больше*, чем можно было бы ожидать по сравнению с
-LinkedList (см. Workload 3, insert/begin при n=100: массив медленнее
-списка сильнее, чем предсказывает голая асимптотика) — это эффект "холодного
-старта" JVM: JIT-компилятор ещё не успел оптимизировать байткод в машинный
-код на первых итерациях бенчмарка, а также случайные колебания
-планировщика ОС. Кроме того, число сравнений при вставке в кучу растёт
-медленнее, чем "наивная" оценка n·log n предполагает в худшем случае —
-теоретический анализ даёт верхнюю границу (Worst-case), а на случайных
-данных фактическая средняя глубина всплытия меньше.
+**3. Where do the results diverge from theoretical predictions?**
+At very small `n` values ​​(100, and to some extent 1000), the `DynamicArray`
+execution time is sometimes *longer* than expected compared to
+`LinkedList` (see Workload 3, `insert`/`begin` at n=100: the array is slower
+than the list by a wider margin than raw asymptotic analysis predicts).
+This is due to the JVM "cold start" effect—where the JIT compiler has not
+yet optimized bytecode into machine code during the initial benchmark
+iterations—as well as random fluctuations caused by the OS scheduler.
+Additionally, the number of comparisons during heap insertion grows
+slower than the "naive" n·log n worst-case estimate suggests;
+theoretical analysis provides an upper bound (worst-case), whereas
+with random data, the actual average "sift-up" depth is lower.
 
-**4. Почему два алгоритма с одинаковой Big-O сложностью могут иметь разное
-время выполнения?**
-Big-O описывает *асимптотический порядок роста*, игнорируя константные
-множители и низкоуровневые эффекты: локальность обращений к памяти (кэш
-L1/L2/L3 у процессора), затраты на аллокацию объектов (каждый узел списка —
-отдельный объект в куче со своим заголовком), ветвления/предсказание
-переходов, накладные расходы на упаковку/распаковку (autoboxing `Integer`).
-Наглядный пример — Workload 2: одинаковое Θ(n) и **идентичное** число
-сравнений, но `DynamicArray` в 1.5–3 раза быстрее `LinkedList` только за
-счёт того, что массив хранится в смежной памяти.
+**4. Why can two algorithms with the same Big-O complexity have different
+execution times?**
+Big-O describes the *asymptotic growth rate*, ignoring constant
+factors and low-level effects: memory access locality (processor L1/L2/L3
+caches), object allocation costs (each list node is a separate object
+on the heap with its own header), branching/branch prediction, and
+overhead from boxing/unboxing (e.g., `Integer` autoboxing). A clear
+example is Workload 2: both have Θ(n) complexity and an **identical**
+number of comparisons, yet `DynamicArray` is 1.5–3 times faster than
+`LinkedList` simply because the array is stored in contiguous memory.
 
-**5. Как константные факторы и детали реализации влияют на
-производительность?**
-- Последовательный доступ к массиву использует аппаратный prefetch
-  процессора — заметно быстрее, чем обход указателей по разбросанным
-  узлам списка (кэш-промахи).
-- Каждый узел `LinkedList` — отдельный Java-объект (заголовок объекта +
-  ссылка `next` + значение), что увеличивает потребление памяти и число
-  обращений к куче (heap, в смысле памяти, не путать с Min-Heap) по
-  сравнению с плотным `Object[]`.
-- Удвоение ёмкости `DynamicArray` создаёт редкие "всплески" по O(n), но
-  амортизированно это не влияет на среднюю стоимость `add(x)`.
-- Autoboxing `int → Integer` одинаково влияет на обе структуры и не
-  является источником различий между ними в этих экспериментах.
+**5. How do constant factors and implementation details affect
+performance?**
+- Sequential array access utilizes the processor's hardware prefetcher—
+making it significantly faster than traversing pointers across
+scattered list nodes (which causes cache misses).
+- Each `LinkedList` node is a separate Java object (object header +
+`next` reference + value), increasing memory consumption and the
+number of heap accesses compared to a compact `Object[]`.
+- Doubling the `DynamicArray` capacity causes occasional O(n) "spikes,"
+but this does not affect the amortized average cost of `add(x)`.
+- Autoboxing (`int` → `Integer`) affects both structures equally and
+is not a source of performance differences between them in these
+experiments.
 
-**6. Когда предпочтителен Dynamic Array?**
-Когда преобладает произвольный доступ по индексу (`get`) или добавление в
-конец — обе операции Θ(1); также хорош, если важна компактность в памяти и
-скорость последовательного перебора (кэш-эффективность), например, при
-обработке больших массивов данных, поиске, сортировке.
+**6. When is a dynamic array preferable?**
+When random access by index (`get`) or appending to the end predominates—both are Θ(1) operations; it is also advantageous when memory compactness and sequential traversal speed (cache efficiency) are important, for example, when processing large datasets, searching, and sorting.
 
-**7. Когда полезен Linked List?**
-Когда преобладают вставки/удаления **в начало** структуры (Θ(1) против
-O(n) у массива) — например, реализация стека, очереди, undo-истории, где
-элементы добавляются/удаляются с одного конца. Также полезен, если размер
-заранее неизвестен и часты вставки в произвольное место *с уже известным
-указателем на узел* (без необходимости искать его заново), либо когда важно
-избежать затрат на периодическое перевыделение памяти при росте.
+**7. When is a Linked List useful?**
+When insertions/deletions **at the beginning** of the structure predominate (Θ(1) vs. O(n) for an array)—for example, in implementing a stack, queue, or undo history, where elements are added/removed from one end. It is also useful when the size is unknown beforehand and insertions at an arbitrary location occur frequently *given a known pointer to the node* (avoiding the need to search for it again), or when it is important to avoid the overhead of periodic memory reallocation as the structure grows.
 
-**8. Почему Heap подходит для приоритетной обработки?**
-Min-Heap даёт Θ(1) доступ к минимуму (`peekMin`) и O(log n) на
-вставку/извлечение — значительно быстрее, чем поддержание отсортированного
-массива/списка (O(n) на вставку) или несортированного (O(n) на поиск
-минимума). Это оптимальный баланс для сценариев "часто вставляем и часто
-берём минимум", типичных для приоритетных очередей, планировщиков задач,
-алгоритмов Дейкстры/Прима и т.д.
+**8. Why is a Heap suitable for priority-based processing?**
+A Min-Heap provides Θ(1) access to the minimum (`peekMin`) and O(log n) for insertion/extraction—significantly faster than maintaining a sorted array/list (O(n) for insertion) or an unsorted one (O(n) to find the minimum). It offers an optimal balance for "frequent insertion and frequent retrieval of the minimum" scenarios, which are typical for priority queues, task schedulers, Dijkstra’s and Prim’s algorithms, etc.
 
-**9. Как workload влияет на выбор структуры?**
-Ни одна структура не является "лучшей" вообще — выбор определяется
-профилем операций: если доминирует случайный доступ по индексу или поиск —
-массив; если доминируют вставки/удаления с известного края (особенно
-начала) — список; если нужен быстрый доступ к минимуму/максимуму с частыми
-изменениями множества — куча. Экспериментальные данные выше количественно
-подтверждают это: например, при n=100 000 вставка в начало у списка в
-**~1600 раз** быстрее, чем у массива (0.04 мс против 63.4 мс), тогда как
-`get(index)` у массива в **~190 000 раз** быстрее, чем у списка
-(0.007 мс против 1349.7 мс).
+**9. How does the workload affect the choice of structure?**
+No single structure is the "best" overall; the choice depends on the operation profile: use an array if random access by index or searching dominates; use a list if insertions/deletions at a known end (especially the beginning) dominate; and use a heap if fast access to the minimum/maximum is required alongside frequent changes to the set. The experimental data above quantitatively confirm this: for instance, with n=100,000, inserting an element at the beginning of a list is **~1,600 times** faster than for an array (0.04 ms vs. 63.4 ms), whereas an array's `get(index)` operation is **~190,000 times** faster than a list's (0.007 ms vs. 1,349.7 ms).
 
 ---
 
 ## 7. Design Recommendations
 
-| Сценарий использования | Рекомендуемая структура | Почему |
+| Use Case | Recommended Structure | Why |
 |---|---|---|
-| Частый доступ по индексу, редкие вставки | DynamicArray | `get` — Θ(1) |
-| Стек / очередь с одной точкой вставки-удаления | LinkedList | вставка/удаление на конце — Θ(1) |
-| Частый поиск по значению в большом наборе | ни одна из двух (нужна хеш-таблица / сбалансированное дерево / отсортированный массив + бинарный поиск) | обе линейны, O(n) неприемлемо при больших n и частых запросах |
-| Приоритетная очередь / алгоритмы с частым извлечением минимума | MinHeap | O(log n) insert/extract, Θ(1) peek |
-| Вставки/удаления преимущественно в начало последовательности | LinkedList | Θ(1) против O(n) у массива |
-| Вставки/удаления преимущественно в конец, доступ по индексу | DynamicArray | `add`(append) амортизированно Θ(1) **и** `get` — Θ(1) |
-| Малый и умеренный n, важна кэш-эффективность и простота | DynamicArray | меньшие константные факторы, компактная память |
-
----
+| Frequent index-based access, infrequent insertions | DynamicArray | `get` is Θ(1) |
+| Stack / queue with a single insertion/deletion point | LinkedList | insertion/deletion at the end is Θ(1) |
+| Frequent value-based search in a large dataset | Neither (requires hash table / balanced tree / sorted array + binary search) | Both are linear; O(n) is unacceptable for large n and frequent queries |
+| Priority queue / algorithms requiring frequent minimum extraction | MinHeap | O(log n) insert/extract, Θ(1) peek |
+| Insertions/deletions primarily at the start of the sequence | LinkedList | Θ(1) vs. O(n) for an array |
+| Insertions/deletions primarily at the end, index-based access | DynamicArray | `add` (append) is amortized Θ(1) **and** `get` is Θ(1) |
+| Small to moderate n; cache efficiency and simplicity are important | DynamicArray | Lower constant factors, compact memory layout | ---
 
 ## 8. Conclusion
 
-Эксперимент подтвердил теоретический анализ по всем трём структурам:
-Dynamic Array обеспечивает Θ(1) произвольный доступ ценой O(n) вставки/удаления
-в произвольную позицию (особенно в начало); Linked List, наоборот, даёт Θ(1)
-вставку/удаление на краях ценой O(n) доступа по индексу; Min-Heap
-эффективно балансирует между вставкой и извлечением минимума за O(log n) при
-Θ(1) доступе к самому минимуму. При этом операции с одинаковой асимптотикой
-(например, `contains` у обеих структур, оба Θ(n)) на практике показывают
-разное время выполнения из-за локальности памяти и константных факторов —
-это ключевой практический урок: **Big-O задаёт форму роста, но не
-предсказывает абсолютное время выполнения**; выбор структуры данных должен
-опираться и на теоретическую асимптотику, и на реальный профиль workload'а,
-и на низкоуровневые особенности среды выполнения (JVM, кэш процессора,
-аллокация памяти). Корректность всех трёх реализаций формально доказана
-через инварианты цикла (раздел 3) и дополнительно подтверждена 71
-автоматическим тестом (`src/Tests.java`), включая перекрёстную валидацию
-против `java.util.ArrayList` и `java.util.PriorityQueue`.
+The experiment confirmed the theoretical analysis for all three structures:
+the Dynamic Array provides Θ(1) random access at the cost of O(n) for insertion/deletion
+at an arbitrary position (especially at the beginning); the Linked List, conversely, offers Θ(1)
+insertion/deletion at the ends at the cost of O(n) indexed access; the Min-Heap
+effectively balances insertion and minimum extraction at O(log n) while
+providing Θ(1) access to the minimum itself. However, operations with identical
+asymptotic complexity (e.g., `contains` in both structures, both Θ(n)) exhibit
+different execution times in practice due to memory locality and constant factors—
+this is a key practical lesson: **Big-O defines the growth rate but does not
+predict absolute execution time**; the choice of data structure must be based
+on theoretical asymptotics, the actual workload profile, and low-level
+runtime environment characteristics (JVM, CPU cache, memory allocation).
+The correctness of all three implementations has been formally proven
+via loop invariants (Section 3) and further verified by 71
+automated tests (`src/Tests.java`), including cross-validation
+against `java.util.ArrayList` and `java.util.PriorityQueue`.
