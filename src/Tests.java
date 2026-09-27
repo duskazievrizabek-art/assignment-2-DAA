@@ -2,13 +2,6 @@ import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Random;
 
-/**
- * Correctness / validation tests for DynamicArray, LinkedList and MinHeap.
- * Not a unit-testing framework (no JUnit dependency required) so that the
- * whole assignment compiles and runs with nothing but the JDK.
- *
- * Run with: java -cp out Tests
- */
 public class Tests {
 
     static int passed = 0;
@@ -37,12 +30,10 @@ public class Tests {
         if (failed > 0) System.exit(1);
     }
 
-    // ------------------------------------------------------------------
     static void testDynamicArray() {
         System.out.println("\n-- DynamicArray --");
         DynamicArray<Integer> a = new DynamicArray<>();
 
-        // empty structure
         check("empty: size == 0", a.size() == 0);
         check("empty: isEmpty()", a.isEmpty());
         check("empty: contains(x) == false", !a.contains(5));
@@ -50,14 +41,12 @@ public class Tests {
         try { a.get(0); } catch (IndexOutOfBoundsException e) { threw = true; }
         check("empty: get(0) throws", threw);
 
-        // one element
         a.add(10);
         check("one element: size == 1", a.size() == 1);
         check("one element: get(0) == 10", a.get(0) == 10);
         check("one element: contains(10)", a.contains(10));
         check("one element: !contains(99)", !a.contains(99));
 
-        // multiple elements + duplicates
         a = new DynamicArray<>();
         int[] vals = {5, 3, 3, 8, 1, 9, 3};
         for (int v : vals) a.add(v);
@@ -67,25 +56,22 @@ public class Tests {
         for (int i = 0; i < vals.length; i++) if (a.get(i) != vals[i]) orderOk = false;
         check("multiple: order preserved after add(x)", orderOk);
 
-        // add(index, x) at boundaries and middle
         a = new DynamicArray<>();
-        for (int i = 0; i < 5; i++) a.add(i); // 0,1,2,3,4
-        a.add(0, -1);      // beginning
-        a.add(a.size(), 99); // end
-        a.add(3, 100);     // middle
+        for (int i = 0; i < 5; i++) a.add(i);
+        a.add(0, -1);
+        a.add(a.size(), 99);
+        a.add(3, 100);
         check("add(index,x): resulting content correct",
                 a.toString().equals("[-1, 0, 1, 100, 2, 3, 4, 99]"));
 
-        // remove(index) at boundaries and middle
         a = new DynamicArray<>();
-        for (int i = 0; i < 5; i++) a.add(i); // 0,1,2,3,4
+        for (int i = 0; i < 5; i++) a.add(i);
         a.remove(0);
         a.remove(a.size() - 1);
-        int mid = a.remove(1); // removes element at index 1 of [1,2,3] -> 2
+        int mid = a.remove(1);
         check("remove(index): correct element removed", mid == 2);
         check("remove(index): resulting content correct", a.toString().equals("[1, 3]"));
 
-        // invalid indices
         threw = false;
         try { a.get(-1); } catch (IndexOutOfBoundsException e) { threw = true; }
         check("invalid index: get(-1) throws", threw);
@@ -96,7 +82,6 @@ public class Tests {
         try { a.remove(100); } catch (IndexOutOfBoundsException e) { threw = true; }
         check("invalid index: remove(100) throws", threw);
 
-        // large input (structural stress test, correctness only)
         a = new DynamicArray<>();
         for (int i = 0; i < 50_000; i++) a.add(i);
         check("large input: size == 50000", a.size() == 50000);
@@ -104,7 +89,6 @@ public class Tests {
         check("large input: contains(25000)", a.contains(25000));
     }
 
-    // ------------------------------------------------------------------
     static void testLinkedList() {
         System.out.println("\n-- LinkedList --");
         LinkedList<Integer> l = new LinkedList<>();
@@ -159,7 +143,6 @@ public class Tests {
         check("large input: contains(25000)", l.contains(25000));
     }
 
-    // ------------------------------------------------------------------
     static void testMinHeap() {
         System.out.println("\n-- MinHeap --");
         MinHeap<Integer> h = new MinHeap<>();
@@ -178,7 +161,6 @@ public class Tests {
         check("one element: extractMin == 5", h.extractMin() == 5);
         check("after extract: empty again", h.isEmpty());
 
-        // duplicates + heap property after every insertion
         h = new MinHeap<>();
         int[] vals = {5, 3, 8, 1, 9, 3, 3, -4, 100, 42};
         for (int v : vals) {
@@ -186,7 +168,6 @@ public class Tests {
             check("heap property holds after insert(" + v + ")", h.isValidHeap());
         }
 
-        // extract in non-decreasing order + heap property after every extraction
         int prev = Integer.MIN_VALUE;
         boolean nonDecreasing = true;
         int countExtracted = 0;
@@ -200,7 +181,6 @@ public class Tests {
         check("extractMin returns non-decreasing sequence", nonDecreasing);
         check("extracted count matches inserted count", countExtracted == vals.length);
 
-        // large input
         h = new MinHeap<>();
         Random rnd = new Random(42);
         for (int i = 0; i < 50_000; i++) h.insert(rnd.nextInt());
@@ -218,8 +198,6 @@ public class Tests {
         check("large input: count == 50000", cnt == 50_000);
     }
 
-    // ------------------------------------------------------------------
-    /** Cross-validate our structures against java.util equivalents on random operation sequences. */
     static void crossValidateAgainstJavaCollections() {
         System.out.println("\n-- Cross-validation against java.util collections --");
         Random rnd = new Random(42);

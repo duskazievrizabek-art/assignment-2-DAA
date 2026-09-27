@@ -3,15 +3,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 
-/**
- * Benchmark harness for Assignment 2.
- *
- * Runs the four required workloads over n = 100, 1000, 10000, 100000,
- * repeats every measurement 5 times, averages the wall-clock time
- * (System.nanoTime()), and writes CSV tables to results/tables/.
- *
- * Random seed: 42, as required by the assignment (Section 6).
- */
 public class Benchmark {
 
     static final int[] SIZES = {100, 1_000, 10_000, 100_000};
@@ -30,9 +21,6 @@ public class Benchmark {
         System.out.println("All benchmarks complete. CSVs written to " + outDir);
     }
 
-    // ---------------------------------------------------------------
-    // Workload 1 - Random Access
-    // ---------------------------------------------------------------
     static void workload1RandomAccess(String path) throws IOException {
         System.out.println("== Workload 1: Random Access ==");
         try (PrintWriter w = new PrintWriter(new FileWriter(path))) {
@@ -75,9 +63,6 @@ public class Benchmark {
         }
     }
 
-    // ---------------------------------------------------------------
-    // Workload 2 - Search
-    // ---------------------------------------------------------------
     static void workload2Search(String path) throws IOException {
         System.out.println("== Workload 2: Search ==");
         try (PrintWriter w = new PrintWriter(new FileWriter(path))) {
@@ -97,8 +82,7 @@ public class Benchmark {
                     Random valGen = new Random(SEED + 2);
                     int[] values = new int[1_000];
                     for (int i = 0; i < values.length; i++) {
-                        // 50% chance of an existing value (to guarantee some hits),
-                        // 50% a fresh random value (mostly misses) - realistic mixed workload
+
                         if (valGen.nextBoolean() && n > 0) {
                             values[i] = da.get(valGen.nextInt(n));
                         } else {
@@ -128,9 +112,6 @@ public class Benchmark {
         }
     }
 
-    // ---------------------------------------------------------------
-    // Workload 3 - Insertion and Removal (begin + middle)
-    // ---------------------------------------------------------------
     static void workload3InsertRemove(String path) throws IOException {
         System.out.println("== Workload 3: Insertion / Removal ==");
         try (PrintWriter w = new PrintWriter(new FileWriter(path))) {
@@ -146,7 +127,7 @@ public class Benchmark {
     private static void runInsertRemove(PrintWriter w, String structName, int n, boolean isArray) {
         String[] positions = {"begin", "middle"};
         for (String pos : positions) {
-            // --- Insertion ---
+
             double insTime = 0;
             long insMoves = 0;
             for (int rep = 0; rep < REPEATS; rep++) {
@@ -170,7 +151,6 @@ public class Benchmark {
             }
             w.println(structName + "," + n + ",insert," + pos + "," + (insTime / REPEATS) + "," + insMoves);
 
-            // --- Removal (restore original structure first) ---
             double remTime = 0;
             long remMoves = 0;
             for (int rep = 0; rep < REPEATS; rep++) {
@@ -213,9 +193,6 @@ public class Benchmark {
         }
     }
 
-    // ---------------------------------------------------------------
-    // Workload 4 - Priority Processing (Min-Heap)
-    // ---------------------------------------------------------------
     static void workload4Heap(String path) throws IOException {
         System.out.println("== Workload 4: Priority Processing (Min-Heap) ==");
         try (PrintWriter w = new PrintWriter(new FileWriter(path))) {

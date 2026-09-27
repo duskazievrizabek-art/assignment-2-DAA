@@ -1,19 +1,11 @@
 import java.util.NoSuchElementException;
 
-/**
- * A generic binary Min-Heap backed by a dynamic array, implemented from
- * scratch for Assignment 2.
- *
- * The heap property maintained: for every node i (i > 0),
- * heap[parent(i)] <= heap[i].
- */
 public class MinHeap<T extends Comparable<T>> {
 
     private Object[] data;
     private int size;
 
-    // ---- instrumentation ----------------------------------------------
-    public long comparisonCount = 0; // number of element comparisons (siftUp/siftDown)
+    public long comparisonCount = 0;
 
     private static final int DEFAULT_CAPACITY = 8;
 
@@ -56,18 +48,6 @@ public class MinHeap<T extends Comparable<T>> {
         data[j] = tmp;
     }
 
-    /**
-     * Inserts x into the heap and restores the heap property by
-     * "sifting up". O(log n) worst/average case, O(1) best case
-     * (new element already >= its parent, e.g. inserted into an
-     * otherwise-sorted-ascending heap chain).
-     *
-     * Loop invariant (see README, Section 3) for the sift-up loop:
-     * before each iteration, the subtree rooted at every index except
-     * possibly the path from `i` up to the root satisfies the min-heap
-     * property, and `i` is the only node that may violate the property
-     * with respect to its parent.
-     */
     public void insert(T x) {
         ensureCapacity(size + 1);
         data[size] = x;
@@ -89,26 +69,12 @@ public class MinHeap<T extends Comparable<T>> {
         }
     }
 
-    /** Returns (without removing) the minimum element. O(1). */
     @SuppressWarnings("unchecked")
     public T peekMin() {
         if (size == 0) throw new NoSuchElementException("Heap is empty");
         return (T) data[0];
     }
 
-    /**
-     * Removes and returns the minimum element (the root), then restores
-     * the heap property by moving the last element to the root and
-     * "sifting down". O(log n) worst/average case, O(1) best case
-     * (heap has 0 or 1 elements, or the moved root is already the
-     * smallest among its children).
-     *
-     * Loop invariant (see README, Section 3) for the sift-down loop:
-     * before each iteration, both children subtrees of `i` (if they
-     * exist) already satisfy the min-heap property; `i` is the only
-     * node in the whole heap that may currently violate the property
-     * relative to its children.
-     */
     @SuppressWarnings("unchecked")
     public T extractMin() {
         if (size == 0) throw new NoSuchElementException("Heap is empty");
@@ -142,7 +108,6 @@ public class MinHeap<T extends Comparable<T>> {
         }
     }
 
-    /** Validates the heap property recursively; used only by Tests.java. */
     public boolean isValidHeap() {
         return isValidHeap(0);
     }
